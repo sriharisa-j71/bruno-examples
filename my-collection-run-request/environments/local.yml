@@ -1,0 +1,20 @@
+name: local
+variables:
+  - name: baseUrl
+    value: http://127.0.0.1:8788
+    description: Demo API
+  - name: tokenUrl
+    value: http://127.0.0.1:8787/token
+    description: OAuth2 token endpoint
+  - name: clientId
+    value: admin
+    description: OAuth2 client id
+  - secret: true
+    name: clientSecret
+    description: Set this in Bruno's Environment -> Secrets tab
+  - name: grantType
+    value: client_credentials
+    description: OAuth2 grant type
+  - name: scope
+    value: fosite
+    description: OAuth2 scope

@@ -1,0 +1,22 @@
+# Local environment and secrets
+.env
+.env.*
+!.env.sample
+!.env.example
+
+# Dependencies
+node_modules/
+
+# Logs
+*.log
+
+# Local build output
+/oauth-test-src/auth
+/oauth-test-src/bin/
+
+# Editors and OS files
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo

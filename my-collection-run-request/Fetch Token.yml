@@ -1,0 +1,57 @@
+info:
+  name: Fetch Token
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{tokenUrl}}"
+  headers:
+    - name: Content-Type
+      value: application/x-www-form-urlencoded
+  body:
+    type: form-urlencoded
+    data:
+      - name: grant_type
+        value: "{{grantType}}"
+      - name: scope
+        value: "{{scope}}"
+  auth:
+    type: basic
+    username: "{{clientId}}"
+    password: "{{clientSecret}}"
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        if (res.status !== 200) {
+          throw new Error("Token request failed with status " + res.status);
+        }
+
+        if (!res.body.access_token) {
+          throw new Error("Token response did not contain access_token");
+        }
+
+        bru.setVar("accessToken", res.body.access_token);
+        bru.setVar(
+          "accessTokenExpiresAt",
+          Date.now() + res.body.expires_in * 1000
+        );
+
+        console.log("Fetch Token stored accessToken in runtime variables");
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  POST {{tokenUrl}} with variables and a secret from the environment.
+
+  Request body uses {{grantType}} and {{scope}}.
+  Basic auth uses {{clientId}} and the secret `clientSecret`.
+  The after-response script stores the token and expiry as runtime
+  variables. Runtime variables are in-memory only, so the token is never
+  written into the collection YAML.

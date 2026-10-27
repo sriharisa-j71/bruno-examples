@@ -1,0 +1,14 @@
+name: local
+variables:
+  - name: baseUrl
+    value: http://127.0.0.1:8788
+    description: Demo API
+  - name: tokenUrl
+    value: http://127.0.0.1:8787/token
+    description: OAuth2 token endpoint
+  - name: clientId
+    value: admin
+    description: OAuth2 client id
+  - name: clientSecret
+    value: foobar
+    description: OAuth2 client secret (demo value)

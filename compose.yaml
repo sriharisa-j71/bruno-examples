@@ -1,0 +1,16 @@
+services:
+  oauth:
+    build:
+      context: ./oauth-test-src
+      dockerfile: Dockerfile.6h
+    image: localhost/oauth-test:6h
+    ports:
+      - "8787:8000"
+
+  api:
+    image: docker.io/library/python:3.12-alpine
+    command: ["python", "/app/server.py"]
+    volumes:
+      - ./server.py:/app/server.py:ro
+    ports:
+      - "8788:8000"

@@ -1,0 +1,17 @@
+FROM docker.io/library/golang:1.27 AS builder
+ENV APP_DIR=/app
+WORKDIR $APP_DIR
+COPY go.mod .
+COPY go.sum .
+RUN go mod download
+COPY . .
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o $APP_DIR/auth main.go
+
+FROM docker.io/library/alpine:latest
+ENV APP_DIR=/app
+WORKDIR $APP_DIR
+COPY --from=builder /app/auth $APP_DIR/auth
+RUN addgroup -g 1000 t1 && adduser -D -u 1000 -G t1 t1
+RUN chown -R 1000:t1 $APP_DIR
+USER 1000
+CMD $APP_DIR/auth

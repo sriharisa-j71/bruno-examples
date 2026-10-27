@@ -1,0 +1,29 @@
+opencollection: 1.0.0
+
+info:
+  name: my collection
+bundled: false
+extensions:
+  bruno:
+    ignore:
+      - node_modules
+      - .git
+
+request:
+  auth:
+    type: oauth2
+    flow: client_credentials
+    accessTokenUrl: "{{tokenUrl}}"
+    refreshTokenUrl: ""
+    credentials:
+      clientId: "{{clientId}}"
+      clientSecret: "{{clientSecret}}"
+      placement: basic_auth_header
+    scope: fosite
+    tokenConfig:
+      id: oauth-test
+      placement:
+        header: Bearer
+    settings:
+      autoFetchToken: true
+      autoRefreshToken: false

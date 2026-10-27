@@ -1,0 +1,77 @@
+info:
+  name: Get Users
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: "{{baseUrl}}/users"
+  headers:
+    - name: Authorization
+      value: "Bearer {{accessToken}}"
+      description: Runtime variable set by the pre-request script
+
+runtime:
+  scripts:
+    - type: before-request
+      code: |-
+        const axios = require("axios");
+
+        const tokenUrl = bru.getEnvVar("tokenUrl");
+        const clientId = bru.getEnvVar("clientId");
+        const clientSecret = bru.getEnvVar("clientSecret");
+
+        const cachedToken = bru.getVar("accessToken");
+        const expiresAt = bru.getVar("accessTokenExpiresAt") || 0;
+
+        if (!cachedToken || Date.now() >= expiresAt) {
+          const response = await axios.post(
+            tokenUrl,
+            "grant_type=client_credentials&scope=fosite",
+            {
+              headers: {
+                "Content-Type": "application/x-www-form-urlencoded"
+              },
+              auth: {
+                username: clientId,
+                password: clientSecret
+              }
+            }
+          );
+
+          const token = response.data.access_token;
+
+          if (!token) {
+            throw new Error("Token endpoint did not return access_token");
+          }
+
+          bru.setVar("accessToken", token);
+          bru.setVar(
+            "accessTokenExpiresAt",
+            Date.now() + response.data.expires_in * 1000 - 60000
+          );
+
+          console.log(
+            "Fetched new OAuth token; expires in",
+            response.data.expires_in,
+            "seconds"
+          );
+        } else {
+          console.log("Reusing cached OAuth token");
+        }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  This request does not use Bruno's OAuth2 auth or `auth: inherit`.
+
+  A pre-request script calls the token endpoint with the client credentials,
+  stores the access token in a runtime variable, and writes it to the
+  Authorization header before the request is sent.
+
+  Run it twice in the same Bruno session: the script reuses the runtime token
+  until it is close to expiry, then fetches a new one.

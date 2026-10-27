@@ -1,0 +1,10 @@
+name: local
+variables:
+  - name: baseUrl
+    value: http://127.0.0.1:8788
+  - name: tokenUrl
+    value: http://127.0.0.1:8787/token
+  - name: clientId
+    value: admin
+  - name: clientSecret
+    value: foobar

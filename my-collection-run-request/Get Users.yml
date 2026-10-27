@@ -1,0 +1,63 @@
+info:
+  name: Get Users
+  type: http
+  seq: 2
+
+http:
+  method: GET
+  url: "{{baseUrl}}/users"
+  headers:
+    - name: Authorization
+      value: "Bearer {{accessToken}}"
+      description: Runtime variable written by the token flow
+
+runtime:
+  scripts:
+    - type: before-request
+      code: |-
+        const token = bru.getVar("accessToken");
+        const expiresAt = Number(bru.getVar("accessTokenExpiresAt")) || 0;
+
+        if (!token || Date.now() >= expiresAt - 60000) {
+          const response = await bru.runRequest("Fetch Token");
+
+          if (response.status !== 200) {
+            throw new Error(
+              "Fetch Token failed with status " + response.status
+            );
+          }
+
+          if (!response.data.access_token) {
+            throw new Error("Token response did not contain access_token");
+          }
+
+          bru.setVar("accessToken", response.data.access_token);
+          bru.setVar(
+            "accessTokenExpiresAt",
+            Date.now() + response.data.expires_in * 1000
+          );
+
+          console.log("Get Users pre-request stored a fresh accessToken");
+        } else {
+          console.log("Get Users pre-request reused runtime accessToken");
+        }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  This request does not use OAuth2 auth or `auth: inherit`.
+
+  Its pre-request script calls the named request `Fetch Token` through
+  `bru.runRequest()`, reads the response, and writes the token plus expiry
+  to runtime variables with `bru.setVar()`.
+
+  The Authorization header then resolves `{{accessToken}}` from those
+  runtime variables. If a valid token is already in the runtime variables,
+  the pre-request script skips `Fetch Token`.
+
+  Runtime variables are in-memory only, so the token is not written into
+  the collection YAML and disappears when the session ends.
